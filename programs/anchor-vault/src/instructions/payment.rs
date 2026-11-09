@@ -49,11 +49,7 @@ impl<'info> Payment<'info> {
         require!(amount <= available, VaultError::InsufficientFunds);
 
         let state_key = self.vault_state.key();
-        let seeds = &[
-            b"vault",
-            state_key.as_ref(),
-            &[self.vault_state.vault_bump],
-        ];
+        let seeds = &[b"vault", state_key.as_ref(), &[self.vault_state.vault_bump]];
         let signer_seeds = &[&seeds[..]];
 
         let cpi_ctx = CpiContext::new_with_signer(

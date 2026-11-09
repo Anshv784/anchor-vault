@@ -31,7 +31,12 @@ fn setup() -> Setup {
     svm.airdrop(&user.pubkey(), 10 * SOL).unwrap();
 
     let (vault_state, vault) = pdas(&user.pubkey());
-    Setup { svm, user, vault_state, vault }
+    Setup {
+        svm,
+        user,
+        vault_state,
+        vault,
+    }
 }
 
 fn pdas(user: &Pubkey) -> (Pubkey, Pubkey) {
@@ -45,7 +50,10 @@ fn pdas(user: &Pubkey) -> (Pubkey, Pubkey) {
 fn send(svm: &mut LiteSVM, ix: Instruction, signer: &Keypair) -> Result<(), String> {
     let msg = Message::new_with_blockhash(&[ix], Some(&signer.pubkey()), &svm.latest_blockhash());
     let tx = VersionedTransaction::try_new(VersionedMessage::Legacy(msg), &[signer]).unwrap();
-    let res = svm.send_transaction(tx).map(|_| ()).map_err(|e| format!("{:?}", e.err));
+    let res = svm
+        .send_transaction(tx)
+        .map(|_| ())
+        .map_err(|e| format!("{:?}", e.err));
     // new blockhash so the same ix can be sent twice in one test
     svm.expire_blockhash();
     res
@@ -118,7 +126,12 @@ fn rent_min(svm: &LiteSVM) -> u64 {
 
 #[test]
 fn initialize_creates_state_and_funds_vault() {
-    let Setup { mut svm, user, vault_state, vault } = setup();
+    let Setup {
+        mut svm,
+        user,
+        vault_state,
+        vault,
+    } = setup();
 
     send(&mut svm, initialize_ix(&user.pubkey()), &user).unwrap();
 
@@ -148,7 +161,12 @@ fn initialize_twice_fails() {
 
 #[test]
 fn deposit_moves_sol_into_vault() {
-    let Setup { mut svm, user, vault, .. } = setup();
+    let Setup {
+        mut svm,
+        user,
+        vault,
+        ..
+    } = setup();
     send(&mut svm, initialize_ix(&user.pubkey()), &user).unwrap();
 
     let before = balance(&svm, &vault);
@@ -169,7 +187,12 @@ fn deposit_zero_fails() {
 
 #[test]
 fn withdraw_sends_sol_back() {
-    let Setup { mut svm, user, vault, .. } = setup();
+    let Setup {
+        mut svm,
+        user,
+        vault,
+        ..
+    } = setup();
     send(&mut svm, initialize_ix(&user.pubkey()), &user).unwrap();
     send(&mut svm, deposit_ix(&user.pubkey(), 3 * SOL), &user).unwrap();
 
@@ -185,7 +208,12 @@ fn withdraw_sends_sol_back() {
 
 #[test]
 fn withdraw_everything_but_rent() {
-    let Setup { mut svm, user, vault, .. } = setup();
+    let Setup {
+        mut svm,
+        user,
+        vault,
+        ..
+    } = setup();
     send(&mut svm, initialize_ix(&user.pubkey()), &user).unwrap();
     send(&mut svm, deposit_ix(&user.pubkey(), SOL), &user).unwrap();
 
@@ -195,7 +223,12 @@ fn withdraw_everything_but_rent() {
 
 #[test]
 fn withdraw_more_than_deposited_fails() {
-    let Setup { mut svm, user, vault, .. } = setup();
+    let Setup {
+        mut svm,
+        user,
+        vault,
+        ..
+    } = setup();
     send(&mut svm, initialize_ix(&user.pubkey()), &user).unwrap();
     send(&mut svm, deposit_ix(&user.pubkey(), SOL), &user).unwrap();
 
@@ -207,7 +240,12 @@ fn withdraw_more_than_deposited_fails() {
 
 #[test]
 fn someone_else_cant_withdraw() {
-    let Setup { mut svm, user, vault, vault_state } = setup();
+    let Setup {
+        mut svm,
+        user,
+        vault,
+        vault_state,
+    } = setup();
     send(&mut svm, initialize_ix(&user.pubkey()), &user).unwrap();
     send(&mut svm, deposit_ix(&user.pubkey(), 2 * SOL), &user).unwrap();
 
@@ -233,7 +271,12 @@ fn someone_else_cant_withdraw() {
 
 #[test]
 fn close_returns_everything() {
-    let Setup { mut svm, user, vault, vault_state } = setup();
+    let Setup {
+        mut svm,
+        user,
+        vault,
+        vault_state,
+    } = setup();
     let start = balance(&svm, &user.pubkey());
 
     send(&mut svm, initialize_ix(&user.pubkey()), &user).unwrap();

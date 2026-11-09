@@ -30,11 +30,7 @@ pub struct Close<'info> {
 impl<'info> Close<'info> {
     pub fn close(&mut self) -> Result<()> {
         let state_key = self.vault_state.key();
-        let seeds = &[
-            b"vault",
-            state_key.as_ref(),
-            &[self.vault_state.vault_bump],
-        ];
+        let seeds = &[b"vault", state_key.as_ref(), &[self.vault_state.vault_bump]];
         let signer_seeds = &[&seeds[..]];
 
         // empty the vault completely. a system account with 0 lamports
